@@ -1,0 +1,241 @@
+# Esboços Bíblicos — Guia de Publicação
+
+Este guia vai te levar do zero até o site no ar, com login, controle de acesso por plano e painel admin.
+
+---
+
+## O que você vai precisar
+
+- Conta Google (para o Firebase)
+- Conta no GitHub (você já tem)
+- Os 3 arquivos do projeto: `index.html`, `app.html`, `admin.html`
+
+Tempo estimado: **20–30 minutos**
+
+---
+
+## Passo 1 — Criar o projeto no Firebase
+
+1. Acesse [firebase.google.com](https://firebase.google.com) e clique em **Começar**
+2. Faça login com sua conta Google
+3. Clique em **Adicionar projeto**
+4. Dê um nome (ex: `esbocos-biblicos`) e clique em **Continuar**
+5. Desative o Google Analytics (não precisa) e clique em **Criar projeto**
+6. Aguarde criar e clique em **Continuar**
+
+---
+
+## Passo 2 — Registrar o app web no Firebase
+
+1. Na tela inicial do projeto, clique no ícone **`</>`** (Web)
+2. Em "Apelido do app", coloque `esbocos-web`
+3. **Não** marque "Firebase Hosting" (vamos usar GitHub Pages)
+4. Clique em **Registrar app**
+5. Você vai ver um bloco de código assim:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "esbocos-biblicos.firebaseapp.com",
+  projectId: "esbocos-biblicos",
+  storageBucket: "esbocos-biblicos.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
+};
+```
+
+6. **Copie essas informações** — você vai colar nos 3 arquivos HTML
+
+---
+
+## Passo 3 — Ativar o Authentication (login)
+
+1. No menu lateral do Firebase, clique em **Authentication**
+2. Clique em **Começar**
+3. Na aba **Método de login**, ative:
+   - **E-mail/senha** → clique, ative e salve
+   - **Google** → clique, ative, coloque seu e-mail de suporte e salve
+
+---
+
+## Passo 4 — Criar o banco de dados (Firestore)
+
+1. No menu lateral, clique em **Firestore Database**
+2. Clique em **Criar banco de dados**
+3. Escolha **Iniciar no modo de produção** e clique em **Avançar**
+4. Escolha a região **us-east1** (ou a mais próxima) e clique em **Ativar**
+5. Aguarde criar
+
+### Configurar as regras de segurança
+
+1. Clique na aba **Regras**
+2. Substitua o conteúdo por:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Usuários só acessam o próprio perfil
+    match /usuarios/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth.token.email == "SEU@EMAIL.COM";
+    }
+
+    // Solicitações: usuário cria, admin lê e edita
+    match /solicitacoes/{solId} {
+      allow create: if request.auth != null;
+      allow read, write: if request.auth.token.email == "SEU@EMAIL.COM";
+    }
+  }
+}
+```
+
+3. Substitua `SEU@EMAIL.COM` pelo seu e-mail
+4. Clique em **Publicar**
+
+---
+
+## Passo 5 — Colar as credenciais nos arquivos HTML
+
+Abra cada um dos 3 arquivos (`index.html`, `app.html`, `admin.html`) e localize este trecho:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJECT.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID",
+  storageBucket: "SEU_PROJECT.appspot.com",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
+```
+
+Substitua pelos dados que você copiou no Passo 2. Faça isso nos **3 arquivos**.
+
+### No arquivo `admin.html`, também substitua:
+
+```javascript
+const ADMIN_EMAIL = "seu@email.com";
+```
+
+Pelo seu e-mail real.
+
+### No arquivo `admin.html` e nas regras do Firestore, substitua:
+
+```
+SEU@EMAIL.COM
+```
+
+Pelo seu e-mail real (em letras maiúsculas nas regras, exatamente como está no Firebase).
+
+---
+
+## Passo 6 — Criar o repositório no GitHub
+
+1. Acesse [github.com](https://github.com) e faça login
+2. Clique em **New repository** (botão verde)
+3. Nome do repositório: `esbocos-biblicos`
+4. Deixe como **Public**
+5. **Não** marque nenhuma opção extra
+6. Clique em **Create repository**
+
+---
+
+## Passo 7 — Subir os arquivos no GitHub
+
+1. Na página do repositório que você criou, clique em **uploading an existing file**
+2. Arraste os 3 arquivos: `index.html`, `app.html`, `admin.html`
+3. Na parte de baixo, clique em **Commit changes**
+
+---
+
+## Passo 8 — Ativar o GitHub Pages
+
+1. No repositório, clique em **Settings** (engrenagem)
+2. No menu lateral esquerdo, clique em **Pages**
+3. Em **Branch**, selecione `main` e a pasta `/ (root)`
+4. Clique em **Save**
+5. Aguarde 1–2 minutos e seu site estará no ar em:
+
+```
+https://SEU-USUARIO.github.io/esbocos-biblicos/
+```
+
+---
+
+## Passo 9 — Autorizar o domínio no Firebase
+
+Para o login funcionar no GitHub Pages, você precisa autorizar o domínio:
+
+1. No Firebase, vá em **Authentication → Settings**
+2. Na seção **Domínios autorizados**, clique em **Adicionar domínio**
+3. Cole o endereço do seu site (ex: `seu-usuario.github.io`)
+4. Clique em **Adicionar**
+
+---
+
+## Como usar no dia a dia
+
+### Acessar o site
+```
+https://SEU-USUARIO.github.io/esbocos-biblicos/
+```
+Usuários fazem login aqui. Novos cadastros entram automaticamente como **Gratuito**.
+
+### Acessar o painel admin
+```
+https://SEU-USUARIO.github.io/esbocos-biblicos/admin.html
+```
+Só você consegue entrar (protegido pelo seu e-mail).
+
+### Fluxo de upgrade
+1. Usuário clica numa aba bloqueada (Ensino, EBD, Aconselhamento ou Devocional)
+2. Vê a tela de bloqueio e clica em **Solicitar upgrade**
+3. Você recebe a solicitação no painel admin
+4. Abre o admin, vê a solicitação e clica em **Aprovar**
+5. O usuário já tem acesso na próxima vez que entrar
+
+### Mudar o plano de alguém manualmente
+1. Abra o admin
+2. Encontre o usuário na lista
+3. Mude o select de Gratuito → Básico → Premium
+4. Clique em **Salvar**
+
+---
+
+## Estrutura de planos
+
+| Plano | Pregação | Ensino | EBD | Aconselhamento | Devocional |
+|-------|----------|--------|-----|----------------|------------|
+| Gratuito | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Básico | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Premium | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+## Atualizar o conteúdo
+
+Para adicionar novos esboços ou editar o conteúdo:
+
+1. Edite o arquivo `app.html` localmente
+2. Vá no GitHub → repositório → clique no arquivo `app.html`
+3. Clique no ícone de lápis (editar)
+4. Cole o conteúdo atualizado
+5. Clique em **Commit changes**
+
+O site atualiza automaticamente em 1–2 minutos.
+
+---
+
+## Próximos passos (quando o site crescer)
+
+- **Domínio próprio** (ex: `esbocosbíblicos.com.br`) → configurar no GitHub Pages + Firebase
+- **App mobile** → usar Capacitor para empacotar como app Android/iOS
+- **Notificações** → Firebase Cloud Messaging para avisar usuários de novo conteúdo
+
+---
+
+## Suporte
+
+Se travar em qualquer etapa, me manda a mensagem de erro e a gente resolve juntos. 🚀
